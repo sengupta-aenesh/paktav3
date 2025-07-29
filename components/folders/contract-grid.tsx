@@ -461,6 +461,12 @@ export default function ContractGrid({
           setDeleteConfirmation({ isOpen: true, contract: contextMenu.contract })
           setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, contract: null })
         }}
+        onShare={() => {
+          if (contextMenu.contract) {
+            setShareModal({ isOpen: true, contract: contextMenu.contract })
+            setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, contract: null })
+          }
+        }}
       />
 
       {/* Modals */}

@@ -472,6 +472,12 @@ export default function TemplateGrid({
           setDeleteConfirmation({ isOpen: true, template: contextMenu.template })
           setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, template: null })
         }}
+        onShare={() => {
+          if (contextMenu.template) {
+            setShareModal({ isOpen: true, template: contextMenu.template })
+            setContextMenu({ isOpen: false, position: { x: 0, y: 0 }, template: null })
+          }
+        }}
       />
 
       {/* Modals */}

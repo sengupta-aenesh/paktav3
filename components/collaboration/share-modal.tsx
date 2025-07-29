@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useEnhancedNotifications } from '@/components/notifications/notification.hooks'
+import { collaborationApi } from '@/lib/collaboration/collaboration-api'
 import styles from './share-modal.module.css'
 import { ShareWithProfiles, UserSearchResult } from '@/lib/types/collaboration'
 
@@ -26,6 +27,7 @@ export default function ShareModal({
   const [permission, setPermission] = useState<'view' | 'edit' | 'admin'>('view')
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([])
   const [shares, setShares] = useState<ShareWithProfiles[]>([])
+  const [pendingEmails, setPendingEmails] = useState<string[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showResults, setShowResults] = useState(false)
@@ -53,7 +55,6 @@ export default function ShareModal({
 
   const fetchShares = async () => {
     try {
-      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
       const shares = await collaborationApi.getShares(resourceType, resourceId)
       setShares(shares)
     } catch (error) {
@@ -80,22 +81,61 @@ export default function ShareModal({
     }
   }
 
+  const addEmailTag = (emailToAdd: string) => {
+    const trimmedEmail = emailToAdd.trim().toLowerCase()
+    if (trimmedEmail && !pendingEmails.includes(trimmedEmail) && isValidEmail(trimmedEmail)) {
+      setPendingEmails([...pendingEmails, trimmedEmail])
+      setEmail('')
+      setShowResults(false)
+    }
+  }
+
+  const removeEmailTag = (emailToRemove: string) => {
+    setPendingEmails(pendingEmails.filter(e => e !== emailToRemove))
+  }
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      if (email.trim()) {
+        addEmailTag(email)
+      }
+    } else if (e.key === 'Backspace' && !email && pendingEmails.length > 0) {
+      removeEmailTag(pendingEmails[pendingEmails.length - 1])
+    }
+  }
+
   const handleShare = async (userEmail?: string) => {
-    const targetEmail = userEmail || email
-    if (!targetEmail) return
+    const emailsToShare = userEmail ? [userEmail] : pendingEmails
+    if (emailsToShare.length === 0 && !email.trim()) return
+
+    // If there's text in the input but no tags, add it as a tag first
+    if (!userEmail && email.trim() && emailsToShare.length === 0) {
+      addEmailTag(email)
+      return
+    }
 
     setIsLoading(true)
     try {
-      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
-      await collaborationApi.createShare({
-        resource_type: resourceType,
-        resource_id: resourceId,
-        shared_with_email: targetEmail,
-        permission,
-        expires_at: null
-      })
+      // Share with all pending emails
+      const sharePromises = emailsToShare.map(targetEmail => 
+        collaborationApi.createShare({
+          resource_type: resourceType,
+          resource_id: resourceId,
+          shared_with_email: targetEmail,
+          permission,
+          expires_at: null
+        })
+      )
 
-      notifications.success('Success', `Shared with ${targetEmail}`)
+      await Promise.all(sharePromises)
+      
+      notifications.success('Success', `Shared with ${emailsToShare.length} user${emailsToShare.length > 1 ? 's' : ''}`)
+      setPendingEmails([])
       setEmail('')
       setShowResults(false)
       fetchShares()
@@ -108,7 +148,6 @@ export default function ShareModal({
 
   const handleUpdatePermission = async (shareId: string, newPermission: 'view' | 'edit' | 'admin') => {
     try {
-      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
       await collaborationApi.updateShare(shareId, {
         permission: newPermission
       })
@@ -124,7 +163,6 @@ export default function ShareModal({
     if (!confirm('Are you sure you want to remove this collaborator?')) return
 
     try {
-      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
       await collaborationApi.deleteShare(shareId)
 
       notifications.success('Success', 'Collaborator removed')
@@ -159,14 +197,30 @@ export default function ShareModal({
           <div className={styles.addSection}>
             <div className={styles.inputGroup}>
               <div className={styles.searchContainer}>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email to share"
-                  className={styles.emailInput}
-                  disabled={isLoading}
-                />
+                <div className={styles.emailTagsContainer}>
+                  {pendingEmails.map((pendingEmail) => (
+                    <div key={pendingEmail} className={styles.emailTag}>
+                      <span>{pendingEmail}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeEmailTag(pendingEmail)}
+                        className={styles.removeTag}
+                        disabled={isLoading}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={pendingEmails.length > 0 ? "Add another email" : "Enter email to share"}
+                    className={styles.emailInput}
+                    disabled={isLoading}
+                  />
+                </div>
                 {isSearching && <div className={styles.searchSpinner}></div>}
                 
                 {showResults && searchResults.length > 0 && (
@@ -217,9 +271,9 @@ export default function ShareModal({
               <button
                 onClick={() => handleShare()}
                 className={styles.shareButton}
-                disabled={!email || isLoading}
+                disabled={(!email && pendingEmails.length === 0) || isLoading}
               >
-                {isLoading ? 'Sharing...' : 'Share'}
+                {isLoading ? 'Sharing...' : pendingEmails.length > 0 ? `Share with ${pendingEmails.length} user${pendingEmails.length > 1 ? 's' : ''}` : 'Share'}
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { FolderOpen, Copy, Trash2, Edit3 } from 'lucide-react'
+import { FolderOpen, Copy, Trash2, Edit3, Share2 } from 'lucide-react'
 import styles from './context-menu.module.css'
 
 interface ContextMenuProps {
@@ -12,6 +12,7 @@ interface ContextMenuProps {
   onCopy: () => void
   onDelete: () => void
   onRename: () => void
+  onShare?: () => void
 }
 
 export default function ContextMenu({
@@ -21,7 +22,8 @@ export default function ContextMenu({
   onMove,
   onCopy,
   onDelete,
-  onRename
+  onRename,
+  onShare
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -114,6 +116,20 @@ export default function ContextMenu({
         <Edit3 size={14} />
         <span>Rename</span>
       </button>
+
+      {onShare && (
+        <>
+          <div className={styles.divider} />
+          
+          <button
+            className={styles.option}
+            onClick={() => handleOptionClick(onShare)}
+          >
+            <Share2 size={14} />
+            <span>Share</span>
+          </button>
+        </>
+      )}
 
       <div className={styles.divider} />
 
