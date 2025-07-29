@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Template, TemplateFolder, templatesApi } from '@/lib/supabase-client'
 import { Button, ConfirmationDialog } from '@/components/ui'
 import { useEnhancedNotifications } from '@/components/notifications/notification.hooks'
+import { collaborationApi } from '@/lib/collaboration/collaboration-api'
+import { CollaboratorPresence } from '@/lib/types/collaboration'
+import ShareModal from '@/components/collaboration/share-modal'
+import CollaboratorAvatars from '@/components/collaboration/collaborator-avatars'
 import ContextMenu from './context-menu'
 import FolderSelectionModal from './folder-selection-modal'
 import RenameModal from './rename-modal'
@@ -19,6 +23,7 @@ interface TemplateGridProps {
   onFolderClick?: (folderId: string) => void
   onBackToAll?: () => void
   onNewTemplateFolder?: () => void
+  currentUserId: string
 }
 
 export default function TemplateGrid({
@@ -30,7 +35,8 @@ export default function TemplateGrid({
   onUploadToFolder,
   onFolderClick,
   onBackToAll,
-  onNewTemplateFolder
+  onNewTemplateFolder,
+  currentUserId
 }: TemplateGridProps) {
   const notifications = useEnhancedNotifications()
   const { notify } = notifications
@@ -48,6 +54,37 @@ export default function TemplateGrid({
     position: { x: number; y: number }
     template: Template | null
   }>({ isOpen: false, position: { x: 0, y: 0 }, template: null })
+  
+  // Collaboration state
+  const [shareModal, setShareModal] = useState<{
+    isOpen: boolean
+    template: Template | null
+  }>({ isOpen: false, template: null })
+  const [collaborators, setCollaborators] = useState<Record<string, CollaboratorPresence[]>>({})
+  
+  // Fetch collaborators for all templates
+  useEffect(() => {
+    const fetchCollaborators = async () => {
+      const collaboratorData: Record<string, CollaboratorPresence[]> = {}
+      
+      for (const template of templates) {
+        try {
+          const templateCollaborators = await collaborationApi.getCollaborators('template', template.id)
+          if (templateCollaborators.length > 0) {
+            collaboratorData[template.id] = templateCollaborators
+          }
+        } catch (error) {
+          console.error(`Error fetching collaborators for template ${template.id}:`, error)
+        }
+      }
+      
+      setCollaborators(collaboratorData)
+    }
+    
+    if (templates.length > 0) {
+      fetchCollaborators()
+    }
+  }, [templates])
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -338,6 +375,8 @@ export default function TemplateGrid({
             {/* Show templates - OS Style */}
             {templates.map((template) => {
               const templateFolder = getFolderForTemplate(template)
+              const templateCollaborators = collaborators[template.id] || []
+              
               return (
                 <div
                   key={template.id}
@@ -371,14 +410,38 @@ export default function TemplateGrid({
                   
                   {/* Template Meta Info */}
                   <div className={styles.osFileMeta}>
-                    {templateFolder ? (
-                      <span>{templateFolder.name}</span>
-                    ) : (
-                      <span className={styles.uncategorizedLabel}>
-                        <span className={styles.redDot}></span>
-                        Uncategorized
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {templateFolder ? (
+                        <span>{templateFolder.name}</span>
+                      ) : (
+                        <span className={styles.uncategorizedLabel}>
+                          <span className={styles.redDot}></span>
+                          Uncategorized
+                        </span>
+                      )}
+                      {templateCollaborators.length > 0 && (
+                        <CollaboratorAvatars 
+                          collaborators={templateCollaborators}
+                          size="sm"
+                          maxDisplay={3}
+                          showTooltip={true}
+                        />
+                      )}
+                    </div>
+                    <button
+                      className={styles.shareButton}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShareModal({ isOpen: true, template })
+                      }}
+                      title="Share template"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               )
@@ -463,6 +526,38 @@ export default function TemplateGrid({
         message={`Are you sure you want to delete "${deleteConfirmation.template?.title}"? This action cannot be undone.`}
         type="danger"
       />
+
+      {/* Share Modal */}
+      {shareModal.template && (
+        <ShareModal
+          isOpen={shareModal.isOpen}
+          onClose={() => {
+            setShareModal({ isOpen: false, template: null })
+            // Refresh collaborators after sharing
+            if (templates.length > 0) {
+              const fetchCollaborators = async () => {
+                const collaboratorData: Record<string, CollaboratorPresence[]> = {}
+                for (const template of templates) {
+                  try {
+                    const templateCollaborators = await collaborationApi.getCollaborators('template', template.id)
+                    if (templateCollaborators.length > 0) {
+                      collaboratorData[template.id] = templateCollaborators
+                    }
+                  } catch (error) {
+                    console.error(`Error fetching collaborators for template ${template.id}:`, error)
+                  }
+                }
+                setCollaborators(collaboratorData)
+              }
+              fetchCollaborators()
+            }
+          }}
+          resourceType="template"
+          resourceId={shareModal.template.id}
+          resourceTitle={shareModal.template.title}
+          currentUserId={currentUserId}
+        />
+      )}
 
       {/* Render toasts */}
       {/* Toasts are now handled by the notification system */}

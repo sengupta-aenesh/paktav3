@@ -2001,3 +2001,7 @@ export const popularJurisdictions = [
   'canada',
   'australia'
 ]
+
+export function getJurisdictionByKey(key: string): JurisdictionData | undefined {
+  return jurisdictionData[key]
+}

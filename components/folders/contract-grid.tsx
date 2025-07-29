@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Contract, contractsApi } from '@/lib/supabase-client'
 import { Button, ConfirmationDialog } from '@/components/ui'
 import { useEnhancedNotifications } from '@/components/notifications/notification.hooks'
+import { collaborationApi } from '@/lib/collaboration/collaboration-api'
+import { CollaboratorPresence } from '@/lib/types/collaboration'
+import ShareModal from '@/components/collaboration/share-modal'
+import CollaboratorAvatars from '@/components/collaboration/collaborator-avatars'
 import ContextMenu from './context-menu'
 import FolderSelectionModal from './folder-selection-modal'
 import RenameModal from './rename-modal'
@@ -28,6 +32,7 @@ interface ContractGridProps {
   onFolderClick?: (folderId: string) => void
   onBackToAll?: () => void
   onNewFolder?: () => void
+  currentUserId: string
 }
 
 export default function ContractGrid({
@@ -39,7 +44,8 @@ export default function ContractGrid({
   onUploadToFolder,
   onFolderClick,
   onBackToAll,
-  onNewFolder
+  onNewFolder,
+  currentUserId
 }: ContractGridProps) {
   const notifications = useEnhancedNotifications()
   const { notify } = notifications
@@ -57,6 +63,37 @@ export default function ContractGrid({
     position: { x: number; y: number }
     contract: Contract | null
   }>({ isOpen: false, position: { x: 0, y: 0 }, contract: null })
+  
+  // Collaboration state
+  const [shareModal, setShareModal] = useState<{
+    isOpen: boolean
+    contract: Contract | null
+  }>({ isOpen: false, contract: null })
+  const [collaborators, setCollaborators] = useState<Record<string, CollaboratorPresence[]>>({})
+  
+  // Fetch collaborators for all contracts
+  useEffect(() => {
+    const fetchCollaborators = async () => {
+      const collaboratorData: Record<string, CollaboratorPresence[]> = {}
+      
+      for (const contract of contracts) {
+        try {
+          const contractCollaborators = await collaborationApi.getCollaborators('contract', contract.id)
+          if (contractCollaborators.length > 0) {
+            collaboratorData[contract.id] = contractCollaborators
+          }
+        } catch (error) {
+          console.error(`Error fetching collaborators for contract ${contract.id}:`, error)
+        }
+      }
+      
+      setCollaborators(collaboratorData)
+    }
+    
+    if (contracts.length > 0) {
+      fetchCollaborators()
+    }
+  }, [contracts])
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -327,6 +364,8 @@ export default function ContractGrid({
             {/* Show contracts - OS Style */}
             {contracts.map((contract) => {
               const contractFolder = getFolderForContract(contract)
+              const contractCollaborators = collaborators[contract.id] || []
+              
               return (
                 <div
                   key={contract.id}
@@ -360,14 +399,38 @@ export default function ContractGrid({
                   
                   {/* Document Meta Info */}
                   <div className={styles.osFileMeta}>
-                    {contractFolder ? (
-                      <span>{contractFolder.name}</span>
-                    ) : (
-                      <span className={styles.uncategorizedLabel}>
-                        <span className={styles.redDot}></span>
-                        Uncategorized
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {contractFolder ? (
+                        <span>{contractFolder.name}</span>
+                      ) : (
+                        <span className={styles.uncategorizedLabel}>
+                          <span className={styles.redDot}></span>
+                          Uncategorized
+                        </span>
+                      )}
+                      {contractCollaborators.length > 0 && (
+                        <CollaboratorAvatars 
+                          collaborators={contractCollaborators}
+                          size="sm"
+                          maxDisplay={3}
+                          showTooltip={true}
+                        />
+                      )}
+                    </div>
+                    <button
+                      className={styles.shareButton}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShareModal({ isOpen: true, contract })
+                      }}
+                      title="Share contract"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               )
@@ -452,6 +515,38 @@ export default function ContractGrid({
         message={`Are you sure you want to delete "${deleteConfirmation.contract?.title}"? This action cannot be undone.`}
         type="danger"
       />
+
+      {/* Share Modal */}
+      {shareModal.contract && (
+        <ShareModal
+          isOpen={shareModal.isOpen}
+          onClose={() => {
+            setShareModal({ isOpen: false, contract: null })
+            // Refresh collaborators after sharing
+            if (contracts.length > 0) {
+              const fetchCollaborators = async () => {
+                const collaboratorData: Record<string, CollaboratorPresence[]> = {}
+                for (const contract of contracts) {
+                  try {
+                    const contractCollaborators = await collaborationApi.getCollaborators('contract', contract.id)
+                    if (contractCollaborators.length > 0) {
+                      collaboratorData[contract.id] = contractCollaborators
+                    }
+                  } catch (error) {
+                    console.error(`Error fetching collaborators for contract ${contract.id}:`, error)
+                  }
+                }
+                setCollaborators(collaboratorData)
+              }
+              fetchCollaborators()
+            }
+          }}
+          resourceType="contract"
+          resourceId={shareModal.contract.id}
+          resourceTitle={shareModal.contract.title}
+          currentUserId={currentUserId}
+        />
+      )}
 
       {/* Render toasts */}
       {/* Toasts are now handled by the notification system */}

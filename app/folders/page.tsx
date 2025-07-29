@@ -203,12 +203,14 @@ export default function FoldersPage() {
             onFolderClick={setSelectedFolder}
             onBackToAll={() => setSelectedFolder(null)}
             onNewFolder={handleNewFolder}
+            currentUserId={user.id}
           />
         ) : (
           <TemplateGrid
             templates={filteredTemplates}
             selectedTemplateFolder={selectedTemplateFolder}
             templateFolders={templateFolders}
+            currentUserId={user.id}
             onTemplateClick={handleTemplateClick}
             onTemplatesUpdate={() => loadTemplates(user.id)}
             onFolderClick={setSelectedTemplateFolder}

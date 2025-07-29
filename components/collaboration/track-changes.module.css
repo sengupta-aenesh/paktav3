@@ -1,0 +1,244 @@
+.trackChanges {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-primary);
+}
+
+.header {
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--color-text-secondary);
+}
+
+.changesList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.changeItem {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.changeItem:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.changeHeader {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.changeInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.changeIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.changeTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.changeMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.changeUser {
+  font-weight: 500;
+}
+
+.changeTime {
+  color: var(--color-text-tertiary);
+}
+
+.expandButton {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.expandButton.expanded {
+  transform: rotate(180deg);
+}
+
+.changeDetails {
+  padding: 0 16px 16px 60px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contentDiff {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.diffStat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.diffLabel {
+  color: var(--color-text-secondary);
+}
+
+.diffAdded {
+  color: #10B981;
+  font-weight: 500;
+}
+
+.diffRemoved {
+  color: #EF4444;
+  font-weight: 500;
+}
+
+.valueDiff {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.oldValue,
+.newValue {
+  display: flex;
+  gap: 8px;
+}
+
+.oldValue .diffLabel {
+  color: #EF4444;
+}
+
+.newValue .diffLabel {
+  color: #10B981;
+}
+
+.changeActions {
+  margin-top: 12px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-secondary);
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.emptyStateHint {
+  margin-top: 8px !important;
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .header,
+  .changesList {
+    padding: 16px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filterSelect {
+    width: 100%;
+  }
+
+  .changeDetails {
+    padding-left: 16px;
+  }
+}

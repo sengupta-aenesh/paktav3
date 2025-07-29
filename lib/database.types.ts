@@ -429,6 +429,199 @@ export interface Database {
           created_by?: string
         }
       }
+      shares: {
+        Row: {
+          id: string
+          resource_type: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id: string
+          shared_by: string
+          shared_with: string
+          permission: 'view' | 'edit' | 'admin'
+          shared_at: string
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          resource_type: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id: string
+          shared_by: string
+          shared_with: string
+          permission: 'view' | 'edit' | 'admin'
+          shared_at?: string
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          resource_type?: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id?: string
+          shared_by?: string
+          shared_with?: string
+          permission?: 'view' | 'edit' | 'admin'
+          shared_at?: string
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      comments: {
+        Row: {
+          id: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          content: string
+          selection_start: number | null
+          selection_end: number | null
+          resolved: boolean
+          resolved_by: string | null
+          resolved_at: string | null
+          parent_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          content: string
+          selection_start?: number | null
+          selection_end?: number | null
+          resolved?: boolean
+          resolved_by?: string | null
+          resolved_at?: string | null
+          parent_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          resource_type?: 'contract' | 'template'
+          resource_id?: string
+          user_id?: string
+          content?: string
+          selection_start?: number | null
+          selection_end?: number | null
+          resolved?: boolean
+          resolved_by?: string | null
+          resolved_at?: string | null
+          parent_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      document_changes: {
+        Row: {
+          id: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          change_type: 'edit' | 'comment' | 'share' | 'analysis' | 'resolve_risk'
+          before_content: string | null
+          after_content: string | null
+          metadata: any
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          change_type: 'edit' | 'comment' | 'share' | 'analysis' | 'resolve_risk'
+          before_content?: string | null
+          after_content?: string | null
+          metadata?: any
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          resource_type?: 'contract' | 'template'
+          resource_id?: string
+          user_id?: string
+          change_type?: 'edit' | 'comment' | 'share' | 'analysis' | 'resolve_risk'
+          before_content?: string | null
+          after_content?: string | null
+          metadata?: any
+          created_at?: string
+        }
+      }
+      presence: {
+        Row: {
+          id: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          cursor_position: number | null
+          selection: any | null
+          last_seen: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          resource_type: 'contract' | 'template'
+          resource_id: string
+          user_id: string
+          cursor_position?: number | null
+          selection?: any | null
+          last_seen?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          resource_type?: 'contract' | 'template'
+          resource_id?: string
+          user_id?: string
+          cursor_position?: number | null
+          selection?: any | null
+          last_seen?: string
+          created_at?: string
+        }
+      }
+      access_requests: {
+        Row: {
+          id: string
+          resource_type: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id: string
+          requester_id: string
+          owner_id: string
+          requested_permission: 'view' | 'edit'
+          message: string | null
+          status: 'pending' | 'approved' | 'denied'
+          responded_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          resource_type: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id: string
+          requester_id: string
+          owner_id: string
+          requested_permission: 'view' | 'edit'
+          message?: string | null
+          status?: 'pending' | 'approved' | 'denied'
+          responded_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          resource_type?: 'contract' | 'template' | 'folder' | 'template_folder'
+          resource_id?: string
+          requester_id?: string
+          owner_id?: string
+          requested_permission?: 'view' | 'edit'
+          message?: string | null
+          status?: 'pending' | 'approved' | 'denied'
+          responded_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

@@ -21,6 +21,16 @@
   --color-success: #16A34A;
   --color-warning: #D97706;
   
+  /* Collaboration colors - only for user differentiation */
+  --collab-user-1: #3B82F6;
+  --collab-user-2: #10B981;
+  --collab-user-3: #F59E0B;
+  --collab-user-4: #EF4444;
+  --collab-user-5: #8B5CF6;
+  --collab-user-6: #EC4899;
+  --collab-user-7: #14B8A6;
+  --collab-user-8: #F97316;
+  
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
