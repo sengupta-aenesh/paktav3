@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { resourceType: string; resourceId: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
+    const url = new URL(request.url)
+    const resourceType = url.searchParams.get('resourceType')
+    const resourceId = url.searchParams.get('resourceId')
+    
+    if (!resourceType || !resourceId) {
+      return NextResponse.json(
+        { error: 'Missing resourceType or resourceId' },
+        { status: 400 }
+      )
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -16,8 +23,6 @@ export async function GET(
         { status: 401 }
       )
     }
-
-    const { resourceType, resourceId } = params
 
     // Verify user has access to view shares (owner or has permission)
     const hasAccess = await verifyViewAccess(supabase, user.id, resourceType, resourceId)

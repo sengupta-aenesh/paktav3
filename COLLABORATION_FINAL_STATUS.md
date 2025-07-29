@@ -151,6 +151,12 @@ The collaboration system is fully functional and production-ready. All core feat
 - Mobile usage
 - Network issues
 
+### Build Error Fix Applied (2025-07-29)
+Fixed dynamic route conflicts by restructuring API endpoints:
+- `/api/shares/[resourceType]/[resourceId]` → `/api/shares/by-resource?resourceType=X&resourceId=Y`
+- `/api/comments/[resourceType]/[resourceId]` → `/api/comments/by-resource?resourceType=X&resourceId=Y`
+- Updated collaboration-api.ts to use query parameters instead of path parameters
+
 ## 📝 Usage Instructions
 
 ### For End Users

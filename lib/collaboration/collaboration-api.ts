@@ -33,7 +33,11 @@ export const collaborationApi = {
   },
 
   async getShares(resourceType: string, resourceId: string): Promise<ShareWithProfiles[]> {
-    const response = await fetch(`/api/shares/${resourceType}/${resourceId}`)
+    const params = new URLSearchParams({
+      resourceType,
+      resourceId
+    })
+    const response = await fetch(`/api/shares/by-resource?${params}`)
     
     if (!response.ok) {
       throw new Error('Failed to fetch shares')
@@ -158,10 +162,13 @@ export const collaborationApi = {
     resourceId: string, 
     includeResolved = false
   ): Promise<CommentWithProfile[]> {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams({
+      resourceType,
+      resourceId
+    })
     if (includeResolved) params.append('includeResolved', 'true')
     
-    const response = await fetch(`/api/comments/${resourceType}/${resourceId}?${params}`)
+    const response = await fetch(`/api/comments/by-resource?${params}`)
     
     if (!response.ok) {
       throw new Error('Failed to fetch comments')

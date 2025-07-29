@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { CommentWithProfile } from '@/lib/types/collaboration'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { resourceType: string; resourceId: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
+    const url = new URL(request.url)
+    const resourceType = url.searchParams.get('resourceType')
+    const resourceId = url.searchParams.get('resourceId')
+    const includeResolved = url.searchParams.get('includeResolved') === 'true'
+    
+    if (!resourceType || !resourceId) {
+      return NextResponse.json(
+        { error: 'Missing resourceType or resourceId' },
+        { status: 400 }
+      )
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -17,10 +25,6 @@ export async function GET(
         { status: 401 }
       )
     }
-
-    const { resourceType, resourceId } = params
-    const searchParams = request.nextUrl.searchParams
-    const includeResolved = searchParams.get('includeResolved') === 'true'
 
     // Verify user has access to view comments
     const hasAccess = await verifyViewAccess(supabase, user.id, resourceType, resourceId)
