@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 76px 24px 16px 24px; /* Added top padding for fixed nav */
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
 }
