@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { captureAPIError } from './sentry-utils'
 
@@ -69,13 +69,13 @@ export function withErrorHandling<T extends any[]>(
 
 // HOC for API route handlers
 export function apiErrorHandler(
-  handler: (request: Request, context?: any) => Promise<Response>
+  handler: (request: Request | NextRequest, context?: any) => Promise<Response>
 ) {
-  return async (request: Request, context?: any): Promise<Response> => {
+  return async (request: Request | NextRequest, context?: any): Promise<Response> => {
     try {
       return await handler(request, context)
     } catch (error) {
-      return handleAPIError(error as Error, request, context)
+      return handleAPIError(error as Error, request as Request, context)
     }
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import { perplexityClient, LegalResearchResult } from './perplexity-client'
-import { supabase } from '../supabase-client'
+import { createClient } from '@/lib/supabase/client'
 
 export interface JurisdictionContext {
   primary: string

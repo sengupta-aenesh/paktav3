@@ -97,7 +97,7 @@ export async function performEnhancedSequentialAnalysis(contractId: string, cont
     
     // Step 2: Perform jurisdiction research if jurisdictions are configured
     let jurisdictionMessage = ''
-    if (userProfile.primary_jurisdiction || userProfile.additional_jurisdictions?.length > 0) {
+    if (userProfile && (userProfile.primary_jurisdiction || (userProfile.additional_jurisdictions && userProfile.additional_jurisdictions.length > 0))) {
       await updateAnalysisStatus(contractId, 'in_progress', 10, null, 'Searching jurisdiction requirements...')
       jurisdictionMessage = ' with jurisdiction-specific analysis'
     }
@@ -105,14 +105,14 @@ export async function performEnhancedSequentialAnalysis(contractId: string, cont
     // Step 3: Summary & Risk Analysis with Jurisdiction Context (Progress: 10% -> 66%)
     addSentryBreadcrumb('Starting jurisdiction-aware analysis', 'contract', 'info', { 
       contractId,
-      primaryJurisdiction: userProfile.primary_jurisdiction,
-      additionalJurisdictions: userProfile.additional_jurisdictions?.length || 0
+      primaryJurisdiction: userProfile?.primary_jurisdiction || null,
+      additionalJurisdictions: userProfile?.additional_jurisdictions?.length || 0
     })
     
     await updateAnalysisStatus(contractId, 'in_progress', 15, null, `Starting analysis${jurisdictionMessage}...`)
     
     const { summary, risks, jurisdictionResearch } = await performWithRetry(
-      () => performJurisdictionAwareAnalysis(content, userProfile, 'both'),
+      () => performJurisdictionAwareAnalysis(content, userProfile || {} as any, 'both'),
       maxRetries,
       'jurisdiction_analysis',
       contractId
@@ -138,7 +138,6 @@ export async function performEnhancedSequentialAnalysis(contractId: string, cont
         risks: risks.risks,
         recommendations: risks.recommendations,
         executiveSummary: risks.executiveSummary,
-        jurisdictionAnalysis: risks.jurisdictionAnalysis,
         missingProtections: risks.missingProtections,
         jurisdictionConflicts: risks.jurisdictionConflicts
       }

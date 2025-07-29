@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       .from('shares')
       .select(`
         permission,
-        shared_by_profile:profiles!shares_shared_by_fkey(id, email, display_name, avatar_url)
+        shared_by_profile:profiles!shares_shared_by_fkey(id, email, display_name, avatar_url, collaboration_color)
       `)
       .eq('resource_type', resourceType)
       .eq('resource_id', resourceId)

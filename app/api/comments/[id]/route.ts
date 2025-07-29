@@ -59,7 +59,7 @@ export async function PUT(
         break
     }
     
-    hasAccess = isOwner || (share && share.permission !== 'view')
+    hasAccess = isOwner || (share && share.permission && share.permission !== 'view')
     
     // Only comment author or users with edit+ access can update
     if (comment.user_id !== user.id && !hasAccess) {
