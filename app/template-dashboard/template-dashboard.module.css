@@ -1,0 +1,270 @@
+.sidebar {
+  background-color: #F5F5F5;
+  border-right: 1px solid #e5e7eb;
+  width: 280px;
+  height: 100%;
+  max-height: calc(100vh - 64px);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure FolderSidebar fills the container properly */
+.sidebar > * {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Compact sidebar - no user footer */
+
+.analysisPanel {
+  background-color: #F5F5F5;
+  border-left: 1px solid #e5e7eb;
+  width: 400px;
+  height: 100%;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.editorPanel {
+  background-color: #ffffff;
+  flex: 1;
+  height: 100%;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+.templateEditor {
+  height: 100%;
+  width: 100%;
+}
+
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px); /* Subtract top nav height */
+  overflow: hidden;
+  margin-top: 64px; /* Push content below fixed nav */
+}
+
+.mainContainer {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.mainContent {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Mobile styles */
+.mobileHidden {
+  display: none;
+}
+
+.mobileVisible {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 769px) {
+  .mobileHidden {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mobileVisible {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Mobile Navigation */
+.mobileNav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 8px;
+  z-index: 50;
+}
+
+.mobileNavBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.mobileNavBtn.active {
+  color: #111827;
+}
+
+.mobileNavBtn svg {
+  margin-bottom: 4px;
+}
+
+@media (min-width: 769px) {
+  .mobileNav {
+    display: none;
+  }
+}
+
+/* Welcome Screen */
+.welcomeScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+  padding: 3rem;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.welcomeScreen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: radial-gradient(ellipse at center top, rgba(17, 24, 39, 0.02) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.welcomeContent {
+  text-align: center;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeIconWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.welcomeIconBackground {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  position: relative;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.welcomeIconBackground:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.welcomeIconBackground svg {
+  width: 32px;
+  height: 32px;
+}
+
+.welcomeTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.welcomeDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.welcomeActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcomeEmptyState {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  color: #92400e;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.welcomeEmptyState svg {
+  width: 16px;
+  height: 16px;
+}
+
+.welcomeHint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.welcomeStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.welcomeStatItem {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.welcomeStatItem:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.welcomeStatNumber {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.welcomeStatLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
