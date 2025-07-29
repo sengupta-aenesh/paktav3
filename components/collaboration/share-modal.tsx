@@ -53,11 +53,9 @@ export default function ShareModal({
 
   const fetchShares = async () => {
     try {
-      const response = await fetch(`/api/shares/${resourceType}/${resourceId}`)
-      if (!response.ok) throw new Error('Failed to fetch shares')
-      
-      const data = await response.json()
-      setShares(data.shares || [])
+      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
+      const shares = await collaborationApi.getShares(resourceType, resourceId)
+      setShares(shares)
     } catch (error) {
       console.error('Error fetching shares:', error)
       notifications.error('Error', 'Failed to load collaborators')
@@ -88,21 +86,14 @@ export default function ShareModal({
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/shares/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resource_type: resourceType,
-          resource_id: resourceId,
-          shared_with_email: targetEmail,
-          permission
-        })
+      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
+      await collaborationApi.createShare({
+        resource_type: resourceType,
+        resource_id: resourceId,
+        shared_with_email: targetEmail,
+        permission,
+        expires_at: null
       })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to share')
-      }
 
       notifications.success('Success', `Shared with ${targetEmail}`)
       setEmail('')
@@ -117,13 +108,10 @@ export default function ShareModal({
 
   const handleUpdatePermission = async (shareId: string, newPermission: 'view' | 'edit' | 'admin') => {
     try {
-      const response = await fetch(`/api/shares/${shareId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permission: newPermission })
+      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
+      await collaborationApi.updateShare(shareId, {
+        permission: newPermission
       })
-
-      if (!response.ok) throw new Error('Failed to update permission')
 
       notifications.success('Success', 'Permission updated')
       fetchShares()
@@ -136,11 +124,8 @@ export default function ShareModal({
     if (!confirm('Are you sure you want to remove this collaborator?')) return
 
     try {
-      const response = await fetch(`/api/shares/${shareId}`, {
-        method: 'DELETE'
-      })
-
-      if (!response.ok) throw new Error('Failed to remove share')
+      const { collaborationApi } = await import('@/lib/collaboration/collaboration-api')
+      await collaborationApi.deleteShare(shareId)
 
       notifications.success('Success', 'Collaborator removed')
       fetchShares()

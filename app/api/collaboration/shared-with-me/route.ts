@@ -21,11 +21,7 @@ export async function GET(request: NextRequest) {
 
     let sharesQuery = supabase
       .from('shares')
-      .select(`
-        *,
-        shared_by_profile:profiles!shares_shared_by_fkey(id, email, display_name, avatar_url),
-        shared_with_profile:profiles!shares_shared_with_fkey(id, email, display_name, avatar_url)
-      `)
+      .select('*')
 
     // Apply filters
     if (filter === 'shared-by-me') {
@@ -48,6 +44,21 @@ export async function GET(request: NextRequest) {
     const sharedResources: SharedResource[] = []
     
     for (const share of shares || []) {
+      // Fetch profiles
+      const { data: sharedByProfile } = await supabase
+        .from('profiles')
+        .select('id, email, display_name, avatar_url, collaboration_color')
+        .eq('id', share.shared_by)
+        .single()
+        
+      const { data: sharedWithProfile } = await supabase
+        .from('profiles')
+        .select('id, email, display_name, avatar_url, collaboration_color')
+        .eq('id', share.shared_with)
+        .single()
+      
+      share.shared_by_profile = sharedByProfile
+      share.shared_with_profile = sharedWithProfile
       let resourceData: any = null
       let title = 'Untitled'
       let lastModified: string | undefined

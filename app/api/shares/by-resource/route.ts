@@ -36,18 +36,36 @@ export async function GET(request: NextRequest) {
     // Get all shares for the resource
     const { data: shares, error: sharesError } = await supabase
       .from('shares')
-      .select(`
-        *,
-        shared_by_profile:profiles!shares_shared_by_fkey(id, email, display_name, avatar_url, collaboration_color),
-        shared_with_profile:profiles!shares_shared_with_fkey(id, email, display_name, avatar_url, collaboration_color)
-      `)
+      .select('*')
       .eq('resource_type', resourceType)
       .eq('resource_id', resourceId)
       .order('created_at', { ascending: false })
-
+    
     if (sharesError) throw sharesError
+    
+    // Manually fetch profiles to avoid foreign key issues
+    const sharesWithProfiles = []
+    for (const share of shares || []) {
+      const { data: sharedByProfile } = await supabase
+        .from('profiles')
+        .select('id, email, display_name, avatar_url, collaboration_color')
+        .eq('id', share.shared_by)
+        .single()
+        
+      const { data: sharedWithProfile } = await supabase
+        .from('profiles')
+        .select('id, email, display_name, avatar_url, collaboration_color')
+        .eq('id', share.shared_with)
+        .single()
+        
+      sharesWithProfiles.push({
+        ...share,
+        shared_by_profile: sharedByProfile,
+        shared_with_profile: sharedWithProfile
+      })
+    }
 
-    return NextResponse.json({ shares: shares || [] })
+    return NextResponse.json({ shares: sharesWithProfiles })
   } catch (error) {
     console.error('Error fetching shares:', error)
     return NextResponse.json(
